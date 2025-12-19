@@ -1,6 +1,8 @@
 ﻿using Bluewave.Inventory.Application; // We'll need to create an extension method here later
 using Bluewave.Inventory.Application.Common.Interfaces;
+using Bluewave.Inventory.Application.Features.Stock.Consumers;
 using Bluewave.Inventory.Infrastructure.Persistence;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 // If you've created validation classes or MediatR handlers, register them here.
 
@@ -32,6 +34,29 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 });
 
 builder.Services.AddScoped<IInventoryDbContext>(provider => provider.GetRequiredService<InventoryDbContext>());
+
+// --- MESSAGING (RabbitMQ with MassTransit) ---
+builder.Services.AddMassTransit(x =>
+{
+    // Register the consumer
+    x.AddConsumer<OrderCreatedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        // Configure the conection using the docker-compose credentials
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        // Create automatically the queue and conect it to the consumer
+        cfg.ReceiveEndpoint("stock-order-created", e =>
+        {
+            e.ConfigureConsumer<OrderCreatedConsumer>(context);
+        });
+    });
+});
 
 // --- APPLICATION LAYER (MediatR) ---
 var applicationAssembly = typeof(Bluewave.Inventory.Application.DependencyInjection).Assembly;
