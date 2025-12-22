@@ -8,7 +8,7 @@ public class Warehouse : BaseEntity
     public string? Code { get; set; }
     public string? Address { get; set; }
 
-    // Se true, é um tanque ou local lógico, não físico
+    // If true, it's a tank or logical location, not physical
     public bool IsVirtual { get; set; }
     public bool IsActive { get; set; } = true;
 }

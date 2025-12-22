@@ -4,7 +4,6 @@ namespace Bluewave.Inventory.Domain.Entities;
 
 public class Product : BaseEntity
 {
-    // C# 'required' garante que essas props sejam preenchidas na instanciação
     public required string Sku { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
@@ -19,17 +18,19 @@ public class Product : BaseEntity
     public Guid? PreferredSupplierId { get; set; }
     public virtual Supplier? PreferredSupplier { get; set; }
 
-    // Controle de Estoque
+    // Stock Control
     public decimal MinStockLevel { get; set; } = 0;
     public decimal? MaxStockLevel { get; set; }
 
-    // Dados de Aquicultura
+    // aquaculture data
+    // TODO: consider moving these properties to a separate entity if more aquaculture-specific data is needed
     public bool IsPerishable { get; set; }
     public bool RequiresColdChain { get; set; }
     public string? ActiveIngredient { get; set; }
     public decimal? Concentration { get; set; }
 
-    // Financeiro
+    // Pricing information
+    // TODO: Consider creating a separate Pricing entity if more pricing details are needed
     public decimal StandardCost { get; set; }
     public bool IsActive { get; set; } = true;
 }
