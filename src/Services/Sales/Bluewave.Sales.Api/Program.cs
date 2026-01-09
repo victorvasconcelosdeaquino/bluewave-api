@@ -6,30 +6,61 @@ using FluentValidation;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql; // Necessário para detecção de erro do banco
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Polly; // <--- NOVO
+using Polly.Retry; // <--- NOVO
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// OPEN TELEMETRY
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(builder.Configuration["OTEL_SERVICE_NAME"] ?? "sales-api"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation()
+            .AddSource("MassTransit")
+            .AddOtlpExporter();
+    });
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Bluewave Sales API", Version = "v1" });
 });
 
-// 1. Database (PostgreSQL)
+// 1. Database (PostgreSQL) 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? "Host=localhost;Port=5433;Database=bluewave_sales;Username=admin;Password=admin;";
 
 builder.Services.AddDbContext<SalesDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null);
+    });
     options.UseSnakeCaseNamingConvention();
 });
 
 builder.Services.AddScoped<ISalesDbContext>(provider => provider.GetRequiredService<SalesDbContext>());
 
-// 2. MediatR (Application)
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly));
+// 2. MediatR & Pipeline Behaviors
+builder.Services.AddValidatorsFromAssembly(typeof(CreateOrderCommand).Assembly);
+
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 // 3. MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
@@ -43,41 +74,43 @@ builder.Services.AddMassTransit(x =>
             h.Username("guest");
             h.Password("guest");
         });
-        // --------------------
+
     });
-});
-
-//4. Pipeline Behavior
-// FluentValidation configuration to register all validators from the Application assembly
-builder.Services.AddValidatorsFromAssembly(typeof(CreateOrderCommand).Assembly);
-
-// MediatR configuration to register services and add the ValidationBehavior
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
-
-    // Adds the ValidationBehavior to the MediatR pipeline
-    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 var app = builder.Build();
 
-// 5. Global Exception Handler Middleware
+// 4. Global Exception Handler Middleware
 app.UseMiddleware<Bluewave.Sales.Api.Middlewares.GlobalExceptionHandlerMiddleware>();
 
-// 6. Migração Automática (Cria o banco sales se não existir)
+// 5. Migration with com Polly
 using (var scope = app.Services.CreateScope())
 {
-    try
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var db = services.GetRequiredService<SalesDbContext>();
+
+    var pipeline = new ResiliencePipelineBuilder()
+        .AddRetry(new RetryStrategyOptions
+        {
+            ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+            MaxRetryAttempts = 5,
+            Delay = TimeSpan.FromSeconds(3),
+            BackoffType = DelayBackoffType.Constant,
+            OnRetry = args =>
+            {
+                logger.LogWarning($"Falha ao conectar no Banco de Vendas: {args.Outcome.Exception?.Message}. Tentativa {args.AttemptNumber} de 5...");
+                return ValueTask.CompletedTask;
+            }
+        })
+        .Build();
+
+    pipeline.Execute(() =>
     {
-        var db = scope.ServiceProvider.GetRequiredService<SalesDbContext>();
+        logger.LogInformation("(Polly) Iniciando migração de Vendas...");
         db.Database.Migrate();
-        Console.WriteLine("✅ Banco de Vendas migrado com sucesso!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Erro ao migrar Vendas: {ex.Message}");
-    }
+        logger.LogInformation("Banco de Vendas migrado com sucesso!");
+    });
 }
 
 if (app.Environment.IsDevelopment())
@@ -86,10 +119,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// In production scenarios, it's recommended to enable HTTPS redirection
+// app.UseHttpsRedirection(); 
+
 app.UseAuthorization();
 
-// Endpoint Rápido (Minimal API) para testar
+app.MapControllers();
+
 app.MapPost("/api/orders", async (IMediator mediator, CreateOrderCommand command) =>
 {
     var id = await mediator.Send(command);

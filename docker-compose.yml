@@ -19,6 +19,17 @@ services:
       - "5672:5672"
       - "15672:15672"
     hostname: rabbitmq
+
+  # Telemetry
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: bluewave-jaeger
+    ports:
+      - "16686:16686" # (Dashboard)
+      - "4317:4317"   # (gRPC)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
     
   # Microssercices
   
@@ -29,12 +40,15 @@ services:
       context: .
       dockerfile: src/Services/Inventory/Bluewave.Inventory.Api/Dockerfile
     # open to test on swagger, otherwise use postman to test via gateway
-    # ports:
-    #  - "5001:8080"
+    ports:
+     - "5001:8080"
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=bluewave;Username=admin;Password=admin;
       - ASPNETCORE_ENVIRONMENT=Development
       - RabbitMqHost=rabbitmq
+      # telemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_SERVICE_NAME=inventory-api
     depends_on:
       - postgres
       - rabbitmq
@@ -46,12 +60,15 @@ services:
       context: .
       dockerfile: src/Services/Sales/Bluewave.Sales.Api/Dockerfile
     # open to test on swagger, otherwise use postman to test via gateway
-    # ports:
-    #  - "5002:8080"
+    ports:
+     - "5002:8080"
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=bluewave_sales;Username=admin;Password=admin;
       - ASPNETCORE_ENVIRONMENT=Development
       - RabbitMqHost=rabbitmq
+    # telemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_SERVICE_NAME=sales-api
     depends_on:
       - postgres
       - rabbitmq
@@ -64,6 +81,10 @@ services:
       dockerfile: src/ApiGateways/Bluewave.Gateway/Dockerfile
     ports:
       - "8080:8080"
+    environment:
+    # telemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_SERVICE_NAME=gateway
     depends_on:
       - inventory-api
       - sales-api

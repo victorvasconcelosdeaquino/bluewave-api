@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewave.Inventory.Infrastructure.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    [Migration("20251211140730_InitialCreate")]
+    [Migration("20251230174513_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
