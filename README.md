@@ -48,3 +48,43 @@ src/
  │         ├── Application/
  │         ├── Domain/
  │         └── Infrastructure/
+```
+
+## 🛠️ How to Run the Project
+Prerequisites
+.NET 9 SDK
+
+Docker Desktop (to run RabbitMQ and SQL Server)
+
+Steps
+1. Clone the repository:
+
+```bash
+git clone [https://github.com/your-username/bluewave.git](https://github.com/your-username/bluewave.git)
+cd bluewave
+```
+
+2. Start the infrastructure (RabbitMQ & Database):
+(Assuming you have a docker-compose.yml file)
+
+```bash
+docker-compose up -d
+```
+
+3. Run the Migrations (Optional, if not auto-applied):
+
+```bash
+dotnet ef database update --project src/Services/Inventory/Bluewave.Inventory.Infrastructure --startup-project src/Services/Inventory/Bluewave.Inventory.Api
+dotnet ef database update --project src/Services/Sales/Bluewave.Sales.Infrastructure --startup-project src/Services/Sales/Bluewave.Sales.Api
+```
+
+4. Run the APIs:
+You can run both APIs using your IDE (like Visual Studio) or via terminal:
+
+```bash
+dotnet run --project src/Services/Inventory/Bluewave.Inventory.Api
+dotnet run --project src/Services/Sales/Bluewave.Sales.Api
+```
+
+5. Test it!
+Open your browser and navigate to the Swagger UI for both services (usually https://localhost:<port>/swagger).
