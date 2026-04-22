@@ -1,4 +1,4 @@
-# Bluewave ERP - Inventory & Sales Microservices
+# Bluewave - Inventory & Sales Microservices
 
 Welcome to the **Bluewave** repository! This is a backend system designed to manage products, warehouses, and sales orders. 
 
