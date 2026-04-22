@@ -6,11 +6,11 @@ using FluentValidation;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Npgsql; // Necessário para detecção de erro do banco
+using Npgsql; 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Polly; // <--- NOVO
-using Polly.Retry; // <--- NOVO
+using Polly; 
+using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,7 +99,7 @@ using (var scope = app.Services.CreateScope())
             BackoffType = DelayBackoffType.Constant,
             OnRetry = args =>
             {
-                logger.LogWarning($"Falha ao conectar no Banco de Vendas: {args.Outcome.Exception?.Message}. Tentativa {args.AttemptNumber} de 5...");
+                logger.LogWarning($"Failed to connect to Sales Database: {args.Outcome.Exception?.Message}. Attempt {args.AttemptNumber} of 5...");
                 return ValueTask.CompletedTask;
             }
         })
@@ -107,9 +107,9 @@ using (var scope = app.Services.CreateScope())
 
     pipeline.Execute(() =>
     {
-        logger.LogInformation("(Polly) Iniciando migração de Vendas...");
+        logger.LogInformation("(Polly) Starting Sales Database migration...");
         db.Database.Migrate();
-        logger.LogInformation("Banco de Vendas migrado com sucesso!");
+        logger.LogInformation("Sales Database migrated successfully!");
     });
 }
 

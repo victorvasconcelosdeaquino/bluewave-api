@@ -31,7 +31,7 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next)
             var response = new
             {
                 status = 400,
-                message = "Erro de validação",
+                message = "Validation Error",
                 errors = validationException.Errors.Select(e => new
                 {
                     field = e.PropertyName,
@@ -48,7 +48,7 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next)
         var errorResponse = new
         {
             status = 500,
-            message = "Ocorreu um erro interno no servidor.",
+            message = "An internal server error occurred.",
             detail = exception.Message
         };
 

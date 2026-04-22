@@ -102,7 +102,7 @@ using (var scope = app.Services.CreateScope())
             BackoffType = DelayBackoffType.Constant,
             OnRetry = args =>
             {
-                logger.LogWarning($"Falha na conexão: {args.Outcome.Exception?.Message}. Tentativa {args.AttemptNumber} de 5...");
+                logger.LogWarning($"Connection failed: {args.Outcome.Exception?.Message}. Try {args.AttemptNumber} of 5...");
                 return ValueTask.CompletedTask;
             }
         })
@@ -110,9 +110,9 @@ using (var scope = app.Services.CreateScope())
 
     pipeline.Execute(() =>
     {
-        logger.LogInformation("(Polly) Iniciando migração do banco...");
+        logger.LogInformation("(Polly) Starting database migration...");
         context.Database.Migrate();
-        logger.LogInformation("BANCO DE DADOS MIGRADO COM SUCESSO!");
+        logger.LogInformation("DATABASE MIGRATED SUCCESSFULLY!");
     });
 }
 

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Bluewave.Core\Bluewave.Core.csproj" />
+  </ItemGroup>
+
 </Project>

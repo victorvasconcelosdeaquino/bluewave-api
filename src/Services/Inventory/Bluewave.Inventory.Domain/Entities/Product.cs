@@ -4,33 +4,69 @@ namespace Bluewave.Inventory.Domain.Entities;
 
 public class Product : BaseEntity
 {
-    public required string Sku { get; set; }
-    public required string Name { get; set; }
-    public string? Description { get; set; }
+    public string Sku { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
+    public Guid CategoryId { get; private set; }
+    public Guid UomId { get; private set; }
+    public Guid? PreferredSupplierId { get; private set; }
+    public decimal MinStockLevel { get; private set; }
+    public decimal? MaxStockLevel { get; private set; }
+    public bool IsPerishable { get; private set; }
+    public bool RequiresColdChain { get; private set; }
+    public string? ActiveIngredient { get; private set; }
+    public decimal? Concentration { get; private set; }
+    public decimal StandardCost { get; private set; }
+    public bool IsActive { get; private set; }
 
-    // Foreign Keys
-    public Guid CategoryId { get; set; }
-    public virtual ProductCategory? Category { get; set; }
+    public ProductCategory? Category { get; private set; }
+    public MeasurementUnit? Uom { get; private set; }
+    public Supplier? PreferredSupplier { get; private set; }
 
-    public Guid UomId { get; set; }
-    public virtual MeasurementUnit? Uom { get; set; }
+    protected Product() { }
 
-    public Guid? PreferredSupplierId { get; set; }
-    public virtual Supplier? PreferredSupplier { get; set; }
+    public Product(string sku, string name, string? description, Guid categoryId, Guid uomId, Guid? preferredSupplierId,
+                   decimal minStockLevel, decimal? maxStockLevel, bool isPerishable, bool requiresColdChain,
+                   string? activeIngredient, decimal? concentration, decimal standardCost)
+    {
+        Sku = sku.ToUpper(); 
+        Name = name;
+        Description = description;
+        CategoryId = categoryId;
+        UomId = uomId;
+        PreferredSupplierId = preferredSupplierId;
+        MinStockLevel = minStockLevel;
+        MaxStockLevel = maxStockLevel;
+        IsPerishable = isPerishable;
+        RequiresColdChain = requiresColdChain;
+        ActiveIngredient = activeIngredient;
+        Concentration = concentration;
+        StandardCost = standardCost;
+        IsActive = true;
+    }
 
-    // Stock Control
-    public decimal MinStockLevel { get; set; } = 0;
-    public decimal? MaxStockLevel { get; set; }
+    public void Update(string name, string? description, Guid categoryId, Guid uomId, Guid? preferredSupplierId,
+                       decimal minStockLevel, decimal? maxStockLevel, bool isPerishable, bool requiresColdChain,
+                       string? activeIngredient, decimal? concentration, decimal standardCost)
+    {
+        Name = name;
+        Description = description;
+        CategoryId = categoryId;
+        UomId = uomId;
+        PreferredSupplierId = preferredSupplierId;
+        MinStockLevel = minStockLevel;
+        MaxStockLevel = maxStockLevel;
+        IsPerishable = isPerishable;
+        RequiresColdChain = requiresColdChain;
+        ActiveIngredient = activeIngredient;
+        Concentration = concentration;
+        StandardCost = standardCost;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-    // aquaculture data
-    // TODO: consider moving these properties to a separate entity if more aquaculture-specific data is needed
-    public bool IsPerishable { get; set; }
-    public bool RequiresColdChain { get; set; }
-    public string? ActiveIngredient { get; set; }
-    public decimal? Concentration { get; set; }
-
-    // Pricing information
-    // TODO: Consider creating a separate Pricing entity if more pricing details are needed
-    public decimal StandardCost { get; set; }
-    public bool IsActive { get; set; } = true;
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

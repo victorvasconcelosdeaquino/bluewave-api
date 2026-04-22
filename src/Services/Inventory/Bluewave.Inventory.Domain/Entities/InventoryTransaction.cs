@@ -5,22 +5,33 @@ namespace Bluewave.Inventory.Domain.Entities;
 
 public class InventoryTransaction : BaseEntity
 {
-    public Guid ProductId { get; set; }
-    public virtual Product? Product { get; set; }
+    public Guid ProductId { get; private set; }
+    public Guid WarehouseId { get; private set; }
+    public TransactionType TransactionType { get; private set; }
+    public decimal Quantity { get; private set; }
+    public string? BatchNumber { get; private set; }
+    public decimal? UnitCost { get; private set; }
+    public string? ReferenceDocument { get; private set; }
+    public string? Notes { get; private set; }
 
-    public Guid WarehouseId { get; set; }
-    public virtual Warehouse? Warehouse { get; set; }
+    // Navigation properties for EF Core
+    public Product? Product { get; private set; }
+    public Warehouse? Warehouse { get; private set; }
 
-    public TransactionType TransactionType { get; set; }
+    protected InventoryTransaction() { }
 
-    public decimal Quantity { get; set; }
+    public InventoryTransaction(Guid productId, Guid warehouseId, TransactionType transactionType,
+        decimal quantity, string? batchNumber, decimal? unitCost, string? referenceDocument, string? notes)
+    {
+        if (quantity <= 0) throw new ArgumentException("The transaction quantity must be greater than zero.", nameof(quantity));
 
-    public string? BatchNumber { get; set; }
-    public DateOnly? ExpiryDate { get; set; }
-
-    public decimal? UnitCost { get; set; }
-
-    public string? ReferenceDocument { get; set; }
-    public string? Notes { get; set; }
-    public Guid? PerformedByUserId { get; set; }
+        ProductId = productId;
+        WarehouseId = warehouseId;
+        TransactionType = transactionType;
+        Quantity = quantity;
+        BatchNumber = batchNumber;
+        UnitCost = unitCost;
+        ReferenceDocument = referenceDocument;
+        Notes = notes;
+    }
 }

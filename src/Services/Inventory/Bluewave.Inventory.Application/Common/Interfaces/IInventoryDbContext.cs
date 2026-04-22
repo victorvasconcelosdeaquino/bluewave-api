@@ -8,5 +8,9 @@ public interface IInventoryDbContext
     DbSet<Product> Products { get; }
     DbSet<InventoryTransaction> Transactions { get; }
     DbSet<Warehouse> Warehouses { get; }
+    DbSet<MeasurementUnit> MeasurementUnits { get; }
+    DbSet<ProductCategory> Categories { get; }
+    DbSet<Supplier> Suppliers { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -1,13 +1,14 @@
 ﻿namespace Bluewave.Core.Messages.IntegrationEvents;
 
-public record OrderCreatedEvent
+public class OrderCreatedEvent
 {
-    public Guid OrderId { get; init; }
-    public List<OrderItemDto> Items { get; init; } = new();
+    public Guid OrderId { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public List<OrderItemEventDto> Items { get; set; } = new();
 }
 
-public record OrderItemDto
+public class OrderItemEventDto
 {
-    public Guid ProductId { get; init; }
-    public decimal Quantity { get; init; }
+    public Guid ProductId { get; set; }
+    public decimal Quantity { get; set; }
 }

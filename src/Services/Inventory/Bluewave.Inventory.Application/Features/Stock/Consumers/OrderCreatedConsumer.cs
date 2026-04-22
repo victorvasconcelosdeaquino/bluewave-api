@@ -14,7 +14,7 @@ public class OrderCreatedConsumer(
     public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
     {
         var message = context.Message;
-        logger.LogInformation("Recebido evento de Venda: Pedido {OrderId}", message.OrderId);
+        logger.LogInformation("Sales event received: Order {OrderId}", message.OrderId);
 
         var defaultWarehouse = await dbContext.Warehouses
             .FirstOrDefaultAsync(w => w.Code == "SILO-01" || w.Code == "WH-MAIN", context.CancellationToken);
@@ -26,7 +26,7 @@ public class OrderCreatedConsumer(
 
         if (defaultWarehouse == null)
         {
-            logger.LogError("ERRO CRÍTICO: Nenhum armazém encontrado no banco para dar baixa no estoque!");
+            logger.LogError("CRITICAL ERROR: No warehouse found in the database to decrease stock!");
             return;
         }
 
@@ -37,28 +37,26 @@ public class OrderCreatedConsumer(
 
             if (product == null)
             {
-                logger.LogWarning("Produto {ProductId} não encontrado no estoque!", item.ProductId);
+                logger.LogWarning("Product {ProductId} not found in stock!", item.ProductId);
                 continue;
             }
 
-            var transaction = new Domain.Entities.InventoryTransaction
-            {
-                ProductId = item.ProductId,
-
-                WarehouseId = defaultWarehouse.Id,
-
-                TransactionType = Domain.Enums.TransactionType.OutboundSales,
-                Quantity = -item.Quantity,
-                ReferenceDocument = $"ORDER-{message.OrderId}",
-                Notes = "Baixa automática via RabbitMQ",
-                UnitCost = product.StandardCost
-            };
+            var transaction = new Domain.Entities.InventoryTransaction(
+                productId: item.ProductId,
+                warehouseId: defaultWarehouse.Id,
+                transactionType: Domain.Enums.TransactionType.OutboundSales, 
+                quantity: item.Quantity,
+                batchNumber: null, // Pode ser null
+                unitCost: product.StandardCost,
+                referenceDocument: $"ORDER-{message.OrderId}",
+                notes: "Automatic decrease via RabbitMQ"
+            );
 
             dbContext.Transactions.Add(transaction);
-            logger.LogInformation("Estoque baixado: {Product} - {Qtd} (Armazém: {Wh})", product.Name, item.Quantity, defaultWarehouse.Name);
+            logger.LogInformation("Stock decreased: {Product} - {Qtd} (Warehouse: {Wh})", product.Name, item.Quantity, defaultWarehouse.Name);
         }
 
         await dbContext.SaveChangesAsync(context.CancellationToken);
-        logger.LogInformation("Transações salvas com sucesso!");
+        logger.LogInformation("Transactions saved successfully!");
     }
 }
