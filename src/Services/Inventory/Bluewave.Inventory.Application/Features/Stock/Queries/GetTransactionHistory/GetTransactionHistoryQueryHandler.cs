@@ -33,7 +33,7 @@ public class GetTransactionHistoryQueryHandler : IRequestHandler<GetTransactionH
                 t.ProductId,
                 t.TransactionType.ToString(),
                 t.Quantity,
-                DateTime.UtcNow,
+                t.CreatedAt,
                 t.ReferenceDocument
             ))
             .ToListAsync(cancellationToken);
