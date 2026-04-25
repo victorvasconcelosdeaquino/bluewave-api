@@ -1,4 +1,4 @@
-﻿using Bluewave.Inventory.Application.Features.MeasurementUnits.Commands;
+﻿using Bluewave.Inventory.Application.Features.MeasurementUnits.Commands.CreateMeasurementUnit;
 using Bluewave.Inventory.Application.Features.MeasurementUnits.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

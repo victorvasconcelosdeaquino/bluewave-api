@@ -1,5 +1,5 @@
-﻿using Bluewave.Inventory.Application.Features.Categories.Commands;
-using Bluewave.Inventory.Application.Features.Categories.Queries;
+﻿using Bluewave.Inventory.Application.Features.Categories.Queries;
+using Bluewave.Inventory.Application.Features.ProductCategory.Commands.CreateProductCategory;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewave.Sales.Infrastructure.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20251222112134_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260424180645_InitialSalesCreate")]
+    partial class InitialSalesCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,10 @@ namespace Bluewave.Sales.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("text")
@@ -41,14 +45,17 @@ namespace Bluewave.Sales.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("order_date");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
                         .HasColumnName("status");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric")
                         .HasColumnName("total_amount");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_orders");
@@ -62,6 +69,10 @@ namespace Bluewave.Sales.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid")
@@ -84,6 +95,10 @@ namespace Bluewave.Sales.Infrastructure.Migrations
                         .HasColumnType("numeric")
                         .HasColumnName("unit_price");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
                     b.HasKey("Id")
                         .HasName("pk_order_items");
 
@@ -95,12 +110,14 @@ namespace Bluewave.Sales.Infrastructure.Migrations
 
             modelBuilder.Entity("Bluewave.Sales.Domain.Entities.OrderItem", b =>
                 {
-                    b.HasOne("Bluewave.Sales.Domain.Entities.Order", null)
+                    b.HasOne("Bluewave.Sales.Domain.Entities.Order", "Order")
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_order_items_orders_order_id");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Bluewave.Sales.Domain.Entities.Order", b =>

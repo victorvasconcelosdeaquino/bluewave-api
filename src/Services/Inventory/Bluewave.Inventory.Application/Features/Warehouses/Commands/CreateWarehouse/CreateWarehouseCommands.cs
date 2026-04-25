@@ -1,8 +1,10 @@
 ﻿using Bluewave.Inventory.Application.Common.Interfaces;
 using Bluewave.Inventory.Domain.Entities;
+using Bluewave.Inventory.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
-namespace Bluewave.Inventory.Application.Features.Warehouses.Commands;
+namespace Bluewave.Inventory.Application.Features.Warehouses.Commands.CreateWarehouse;
 
 // DTOs
 public record CreateWarehouseCommand(string Name, string? Code, string? Address, bool IsVirtual) : IRequest<Guid>;
@@ -48,7 +50,19 @@ public class WarehouseCommandHandlers :
         var entity = await _context.Warehouses.FindAsync(new object[] { request.Id }, cancellationToken);
         if (entity == null) return false;
 
-        entity.Deactivate(); // Soft Delete lógico
+        var currentBalance = await _context.InventoryTransactions
+            .Where(t => t.WarehouseId == request.Id)
+            .SumAsync(t =>
+                (t.TransactionType == TransactionType.InboundPurchase) ? t.Quantity :
+                (t.TransactionType == TransactionType.OutboundSales) ? -t.Quantity : 0,
+                cancellationToken);
+
+        if (currentBalance > 0)
+        {
+            throw new InvalidOperationException($"Cannot deactivate warehouse '{entity.Name}' because it still has {currentBalance} items in stock. Transfer the stock first.");
+        }
+
+        entity.Deactivate();
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Bluewave.Sales.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSalesCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,8 +18,10 @@ namespace Bluewave.Sales.Infrastructure.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     customer_name = table.Column<string>(type: "text", nullable: false),
                     order_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
                     total_amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    status = table.Column<string>(type: "text", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -35,7 +37,9 @@ namespace Bluewave.Sales.Infrastructure.Migrations
                     product_id = table.Column<Guid>(type: "uuid", nullable: false),
                     product_name = table.Column<string>(type: "text", nullable: false),
                     unit_price = table.Column<decimal>(type: "numeric", nullable: false),
-                    quantity = table.Column<decimal>(type: "numeric", nullable: false)
+                    quantity = table.Column<decimal>(type: "numeric", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

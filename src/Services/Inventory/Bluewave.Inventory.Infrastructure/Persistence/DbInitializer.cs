@@ -71,9 +71,9 @@ public static class DbInitializer
             "Estoque inicial do sistema"
         );
 
-        context.Transactions.Add(transacaoEntradaRacao);
+        context.InventoryTransactions.Add(transacaoEntradaRacao);
 
-        context.Transactions.Add(transacaoEntradaRacao);
+        context.InventoryTransactions.Add(transacaoEntradaRacao);
 
         context.SaveChanges();
     }

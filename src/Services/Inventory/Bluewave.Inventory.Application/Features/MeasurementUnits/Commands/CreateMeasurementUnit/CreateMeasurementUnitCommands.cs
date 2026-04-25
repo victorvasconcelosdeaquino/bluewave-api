@@ -2,7 +2,7 @@
 using Bluewave.Inventory.Domain.Entities;
 using MediatR;
 
-namespace Bluewave.Inventory.Application.Features.MeasurementUnits.Commands;
+namespace Bluewave.Inventory.Application.Features.MeasurementUnits.Commands.CreateMeasurementUnit;
 
 // DTOs
 public record CreateMeasurementUnitCommand(string Code, string Name, string? Description) : IRequest<Guid>;

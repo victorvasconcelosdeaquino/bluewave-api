@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bluewave.Inventory.Infrastructure.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    [Migration("20251230174513_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260424181243_InitialCreateInventory")]
+    partial class InitialCreateInventory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,17 +40,9 @@ namespace Bluewave.Inventory.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<DateOnly?>("ExpiryDate")
-                        .HasColumnType("date")
-                        .HasColumnName("expiry_date");
-
                     b.Property<string>("Notes")
                         .HasColumnType("text")
                         .HasColumnName("notes");
-
-                    b.Property<Guid?>("PerformedByUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("performed_by_user_id");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid")

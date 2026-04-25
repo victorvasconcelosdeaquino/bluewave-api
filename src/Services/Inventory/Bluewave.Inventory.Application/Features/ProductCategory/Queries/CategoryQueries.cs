@@ -1,18 +1,18 @@
 ﻿using Bluewave.Inventory.Application.Common.Interfaces;
-using Bluewave.Inventory.Domain.Entities;
+using Category = Bluewave.Inventory.Domain.Entities.ProductCategory;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bluewave.Inventory.Application.Features.Categories.Queries;
 
 // DTOs
-public record GetCategoryByIdQuery(Guid Id) : IRequest<ProductCategory?>;
-public record GetAllCategoriesQuery() : IRequest<List<ProductCategory>>;
+public record GetCategoryByIdQuery(Guid Id) : IRequest<Category?>;
+public record GetAllCategoriesQuery() : IRequest<List<Category>>;
 
 // HANDLERS
 public class CategoryQueryHandlers :
-    IRequestHandler<GetCategoryByIdQuery, ProductCategory?>,
-    IRequestHandler<GetAllCategoriesQuery, List<ProductCategory>>
+    IRequestHandler<GetCategoryByIdQuery, Category?>,
+    IRequestHandler<GetAllCategoriesQuery, List<Category>>
 {
     private readonly IInventoryDbContext _context;
 
@@ -21,7 +21,7 @@ public class CategoryQueryHandlers :
         _context = context;
     }
 
-    public async Task<ProductCategory?> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Category?> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
         return await _context.Categories
             .AsNoTracking()
@@ -29,7 +29,7 @@ public class CategoryQueryHandlers :
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
     }
 
-    public async Task<List<ProductCategory>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
+    public async Task<List<Category>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
     {
         return await _context.Categories
             .AsNoTracking()

@@ -37,17 +37,9 @@ namespace Bluewave.Inventory.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<DateOnly?>("ExpiryDate")
-                        .HasColumnType("date")
-                        .HasColumnName("expiry_date");
-
                     b.Property<string>("Notes")
                         .HasColumnType("text")
                         .HasColumnName("notes");
-
-                    b.Property<Guid?>("PerformedByUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("performed_by_user_id");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid")

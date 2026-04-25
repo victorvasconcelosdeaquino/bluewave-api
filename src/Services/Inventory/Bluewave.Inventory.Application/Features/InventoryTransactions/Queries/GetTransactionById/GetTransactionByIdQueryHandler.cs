@@ -10,7 +10,7 @@ public class GetTransactionByIdQueryHandler(IInventoryDbContext context)
 {
     public async Task<InventoryTransaction?> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
     {
-        return await context.Transactions
+        return await context.InventoryTransactions
             .AsNoTracking()
             .Include(t => t.Product)
             .Include(t => t.Warehouse)

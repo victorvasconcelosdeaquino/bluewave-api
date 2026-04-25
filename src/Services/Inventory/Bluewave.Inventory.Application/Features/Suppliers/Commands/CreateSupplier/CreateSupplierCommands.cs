@@ -2,7 +2,7 @@
 using Bluewave.Inventory.Domain.Entities;
 using MediatR;
 
-namespace Bluewave.Inventory.Application.Features.Suppliers.Commands;
+namespace Bluewave.Inventory.Application.Features.Suppliers.Commands.CreateSupplier;
 
 // DTOs
 public record CreateSupplierCommand(string CompanyName, string? TaxId, string? ContactName, string? Email, string? Phone, string? City) : IRequest<Guid>;

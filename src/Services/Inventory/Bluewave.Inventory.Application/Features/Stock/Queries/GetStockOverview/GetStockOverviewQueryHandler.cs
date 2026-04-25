@@ -7,6 +7,7 @@
 // The Handler will project directly from the Entities.
 
 using Bluewave.Inventory.Application.Common.Interfaces;
+using Bluewave.Inventory.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,10 +30,16 @@ public class GetStockOverviewQueryHandler(IInventoryDbContext context)
                 p.Sku,
                 p.Name,
                 p.Category!.Name,
-                // Subquery to sum the current stock of this product
-                context.Transactions
+                // Subquery corrigida para considerar o tipo de transação:
+                context.InventoryTransactions
                     .Where(t => t.ProductId == p.Id)
-                    .Sum(t => t.Quantity),
+                    .Sum(t =>
+                        (t.TransactionType == TransactionType.InboundPurchase ||
+                         t.TransactionType == TransactionType.TransferIn ||
+                         t.TransactionType == TransactionType.Return) ? t.Quantity :
+                        (t.TransactionType == TransactionType.OutboundSales ||
+                         t.TransactionType == TransactionType.OutboundProduction ||
+                         t.TransactionType == TransactionType.TransferOut) ? -t.Quantity : 0),
                 p.Uom!.Code
             ))
             .ToListAsync(cancellationToken);

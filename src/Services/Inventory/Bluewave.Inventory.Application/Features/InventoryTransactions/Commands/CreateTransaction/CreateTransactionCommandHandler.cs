@@ -13,7 +13,7 @@ public class CreateTransactionCommandHandler(IInventoryDbContext context)
             request.ProductId, request.WarehouseId, request.TransactionType, request.Quantity,
             request.BatchNumber, request.UnitCost, request.ReferenceDocument, request.Notes);
 
-        context.Transactions.Add(entity);
+        context.InventoryTransactions.Add(entity);
         await context.SaveChangesAsync(cancellationToken);
 
         // TODO: Maybe here is where we could publish an event to RabbitMQ

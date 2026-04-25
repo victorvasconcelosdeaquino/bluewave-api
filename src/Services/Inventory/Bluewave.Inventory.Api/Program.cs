@@ -1,9 +1,11 @@
-﻿using Bluewave.Inventory.Application.Common.Interfaces;
+﻿using Bluewave.Core.Extensions;
+using Bluewave.Inventory.Application.Features.ProductCategory.Commands.CreateCategory;
+using System.Reflection;
+using Bluewave.Inventory.Application.Common.Interfaces;
 using Bluewave.Inventory.Application.Features.Stock.Consumers;
 using Bluewave.Inventory.Infrastructure.Persistence;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Polly;
@@ -11,11 +13,9 @@ using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Basisc Configurations
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Open Telemetry
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(builder.Configuration["OTEL_SERVICE_NAME"] ?? "inventory-api"))
     .WithTracing(tracing =>
@@ -33,8 +33,6 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "Bluewave Inventory API", Version = "v1" });
 });
 
-// 2. Database (PostgreSQL)
-// Fallback to localhost in case Docker env fails
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? "Host=localhost;Port=5433;Database=bluewave;Username=admin;Password=admin;";
 
@@ -52,14 +50,8 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 
 builder.Services.AddScoped<IInventoryDbContext>(provider => provider.GetRequiredService<InventoryDbContext>());
 
-// 3. MediatR (Application layer)
-// Manuelly register to ensure Docker can find the Handlers
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(OrderCreatedConsumer).Assembly);
-});
+builder.Services.AddBluewaveCore(typeof(CreateCategoryCommandValidator).Assembly);
 
-// 4. MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<OrderCreatedConsumer>();
@@ -85,7 +77,8 @@ builder.Services.AddMassTransit(x =>
 
 var app = builder.Build();
 
-// 5. Automatic Migration
+app.UseBluewaveCore();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

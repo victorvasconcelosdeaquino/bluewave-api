@@ -1,15 +1,12 @@
-﻿using Bluewave.Sales.Application.Common.Behaviors;
+﻿using Bluewave.Core.Extensions;
 using Bluewave.Sales.Application.Features.Orders.Commands.CreateOrder;
 using Bluewave.Sales.Application.Interfaces;
 using Bluewave.Sales.Infrastructure.Persistence;
-using FluentValidation;
 using MassTransit;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Npgsql; 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Polly; 
+using Polly;
 using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +32,6 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "Bluewave Sales API", Version = "v1" });
 });
 
-// 1. Database (PostgreSQL) 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? "Host=localhost;Port=5433;Database=bluewave_sales;Username=admin;Password=admin;";
 
@@ -53,16 +49,8 @@ builder.Services.AddDbContext<SalesDbContext>(options =>
 
 builder.Services.AddScoped<ISalesDbContext>(provider => provider.GetRequiredService<SalesDbContext>());
 
-// 2. MediatR & Pipeline Behaviors
-builder.Services.AddValidatorsFromAssembly(typeof(CreateOrderCommand).Assembly);
+builder.Services.AddBluewaveCore(typeof(CreateOrderCommand).Assembly);
 
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
-    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
-});
-
-// 3. MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
@@ -74,16 +62,13 @@ builder.Services.AddMassTransit(x =>
             h.Username("guest");
             h.Password("guest");
         });
-
     });
 });
 
 var app = builder.Build();
 
-// 4. Global Exception Handler Middleware
-app.UseMiddleware<Bluewave.Sales.Api.Middlewares.GlobalExceptionHandlerMiddleware>();
+app.UseBluewaveCore();
 
-// 5. Migration with com Polly
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -125,11 +110,5 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapPost("/api/orders", async (IMediator mediator, CreateOrderCommand command) =>
-{
-    var id = await mediator.Send(command);
-    return Results.Created($"/api/orders/{id}", id);
-});
 
 app.Run();

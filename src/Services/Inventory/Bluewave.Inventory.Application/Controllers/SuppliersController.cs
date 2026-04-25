@@ -1,4 +1,4 @@
-﻿using Bluewave.Inventory.Application.Features.Suppliers.Commands;
+﻿using Bluewave.Inventory.Application.Features.Suppliers.Commands.CreateSupplier;
 using Bluewave.Inventory.Application.Features.Suppliers.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

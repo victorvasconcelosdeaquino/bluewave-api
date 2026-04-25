@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Bluewave.Inventory.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCreateInventory : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -141,11 +141,9 @@ namespace Bluewave.Inventory.Infrastructure.Migrations
                     transaction_type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     quantity = table.Column<decimal>(type: "numeric(15,3)", precision: 15, scale: 3, nullable: false),
                     batch_number = table.Column<string>(type: "text", nullable: true),
-                    expiry_date = table.Column<DateOnly>(type: "date", nullable: true),
                     unit_cost = table.Column<decimal>(type: "numeric(15,4)", precision: 15, scale: 4, nullable: true),
                     reference_document = table.Column<string>(type: "text", nullable: true),
                     notes = table.Column<string>(type: "text", nullable: true),
-                    performed_by_user_id = table.Column<Guid>(type: "uuid", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

@@ -1,4 +1,4 @@
-﻿using Bluewave.Inventory.Application.Features.Warehouses.Commands;
+﻿using Bluewave.Inventory.Application.Features.Warehouses.Commands.CreateWarehouse;
 using Bluewave.Inventory.Application.Features.Warehouses.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

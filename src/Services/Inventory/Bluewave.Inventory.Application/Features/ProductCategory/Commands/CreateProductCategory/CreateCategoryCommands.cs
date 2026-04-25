@@ -1,9 +1,9 @@
 ﻿using Bluewave.Inventory.Application.Common.Interfaces;
-using Bluewave.Inventory.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Category = Bluewave.Inventory.Domain.Entities.ProductCategory;
 
-namespace Bluewave.Inventory.Application.Features.Categories.Commands;
+namespace Bluewave.Inventory.Application.Features.ProductCategory.Commands.CreateProductCategory;
 
 // DTOs
 public record CreateCategoryCommand(string Name, string? Description, Guid? ParentId = null) : IRequest<Guid>;
@@ -23,9 +23,10 @@ public class CategoryCommandHandlers :
         _context = context;
     }
 
+    //TODO: split handlers into separate classes for better separation of concerns
     public async Task<Guid> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
-        var entity = new ProductCategory(request.Name, request.Description, request.ParentId);
+        var entity = new Category(request.Name, request.Description, request.ParentId);
 
         _context.Categories.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
