@@ -53,6 +53,13 @@ builder.Services.AddBluewaveCore(typeof(CreateOrderCommand).Assembly);
 
 builder.Services.AddMassTransit(x =>
 {
+
+    x.AddEntityFrameworkOutbox<SalesDbContext>(o =>
+    {
+        o.UsePostgres(); 
+        o.UseBusOutbox();
+    });
+
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitHost = builder.Configuration["RabbitMqHost"] ?? "localhost";
@@ -62,6 +69,8 @@ builder.Services.AddMassTransit(x =>
             h.Username("guest");
             h.Password("guest");
         });
+
+        cfg.ConfigureEndpoints(context);
     });
 });
 

@@ -22,6 +22,7 @@ public class Product : BaseEntity
     public ProductCategory? Category { get; private set; }
     public MeasurementUnit? Uom { get; private set; }
     public Supplier? PreferredSupplier { get; private set; }
+    public uint Version { get; private set; }
 
     protected Product() { }
 
